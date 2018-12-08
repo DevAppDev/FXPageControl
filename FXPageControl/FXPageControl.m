@@ -31,6 +31,7 @@
 //
 
 #import "FXPageControl.h"
+#import "UIManager.h"
 
 
 #pragma GCC diagnostic ignored "-Wgnu"
@@ -67,13 +68,13 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 @implementation FXPageControl
 
 - (void)setUp
-{	
+{
     //needs redrawing if bounds change
     self.contentMode = UIViewContentModeRedraw;
-    
-	//set defaults
-	_dotSpacing = 10.0f;
-	_dotSize = 6.0f;
+    self.style = DS_DOT;
+    //set defaults
+    _dotSpacing = 10.0f;
+    _dotSize = 6.0f;
     _dotShadowOffset = CGSizeMake(0, 1);
     _selectedDotShadowOffset = CGSizeMake(0, 1);
 }
@@ -81,19 +82,40 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame]))
-	{
-		[self setUp];
+    {
+        [self setUp];
     }
     return self;
 }
 
+- (id)initWithFrame:(CGRect)frame style:(DotStyle)style
+{
+    if ((self = [super initWithFrame:frame]))
+    {
+        [self setUp];
+        self.style = style;
+        
+        //        if (self.style == DS_LINE) {
+        //            [self createSelectedView];
+        //        }
+    }
+    return self;
+}
+
+//-(void)createSelectedView
+//{
+//    self.selectedView = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(self.frame) - 1, CGRectGetWidth(self.frame), 1)];
+//    self.selectedView.backgroundColor = kMyAppColor;
+//    [self addSubview:self.selectedView];
+//}
+
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
-	if ((self = [super initWithCoder:aDecoder]))
-	{
-		[self setUp];
-	}
-	return self;
+    if ((self = [super initWithCoder:aDecoder]))
+    {
+        [self setUp];
+    }
+    return self;
 }
 
 - (void)dealloc
@@ -115,16 +137,16 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 
 - (void)drawRect:(__unused CGRect)rect
 {
-	if (self.numberOfPages > 1 || !self.hidesForSinglePage)
-	{
+    if (self.numberOfPages > 1 || !self.hidesForSinglePage)
+    {
         CGContextRef context = UIGraphicsGetCurrentContext();
         
-		CGFloat width = [self sizeForNumberOfPages:self.numberOfPages].width;
-		CGFloat offset = (self.frame.size.width - width) / 2;
-    
-		for (int i = 0; i < self.numberOfPages; i++)
-		{
-			UIImage *dotImage = nil;
+        CGFloat width = [self sizeForNumberOfPages:self.numberOfPages].width;
+        CGFloat offset = (self.frame.size.width - width) / 2;
+        
+        for (int i = 0; i < self.numberOfPages; i++)
+        {
+            UIImage *dotImage = nil;
             UIColor *dotColor = nil;
             CGPathRef dotShape = NULL;
             CGFloat dotSize = 0;
@@ -132,34 +154,39 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
             CGSize dotShadowOffset = CGSizeZero;
             CGFloat dotShadowBlur = 0;
             
-			if (i == self.currentPage)
-			{
-				[self.selectedDotColor setFill];
-				dotImage = [self.delegate pageControl:self selectedImageForDotAtIndex:i] ?: self.selectedDotImage;
-                dotShape = [self.delegate pageControl:self selectedShapeForDotAtIndex:i] ?: self.selectedDotShape ?: self.dotShape;
-				dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: [UIColor blackColor];
-                dotShadowBlur = self.selectedDotShadowBlur;
-                dotShadowColor = self.selectedDotShadowColor;
-                dotShadowOffset = self.selectedDotShadowOffset;
-                dotSize = self.selectedDotSize ?: self.dotSize;
-			}
-			else
-			{
-				[self.dotColor setFill];
-                dotImage = [self.delegate pageControl:self imageForDotAtIndex:i] ?: self.dotImage;
-                dotShape = [self.delegate pageControl:self shapeForDotAtIndex:i] ?: self.dotShape;
-				dotColor = [self.delegate pageControl:self colorForDotAtIndex:i] ?: self.dotColor;
-                if (!dotColor)
-                {
-                    //fall back to selected dot color with reduced alpha
-                    dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: [UIColor blackColor];
-                    dotColor = [dotColor colorWithAlphaComponent:0.25f];
+            if (i == self.currentPage)
+            {
+                [self.selectedDotColor setFill];
+                
+                if (self.style == DS_DOT) {
+                    dotImage = [self.delegate pageControl:self selectedImageForDotAtIndex:i] ?: self.selectedDotImage;
+                    dotShape = [self.delegate pageControl:self selectedShapeForDotAtIndex:i] ?: self.selectedDotShape ?: self.dotShape;
+                    dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: kBlackColor;
+                    dotShadowBlur = self.selectedDotShadowBlur;
+                    dotShadowColor = self.selectedDotShadowColor;
+                    dotShadowOffset = self.selectedDotShadowOffset;
+                    dotSize = self.selectedDotSize ?: self.dotSize;
                 }
-                dotShadowBlur = self.dotShadowBlur;
-                dotShadowColor = self.dotShadowColor;
-                dotShadowOffset = self.dotShadowOffset;
-                dotSize = self.dotSize;
-			}
+            }
+            else
+            {
+                [self.dotColor setFill];
+                if (self.style == DS_DOT) {
+                    dotImage = [self.delegate pageControl:self imageForDotAtIndex:i] ?: self.dotImage;
+                    dotShape = [self.delegate pageControl:self shapeForDotAtIndex:i] ?: self.dotShape;
+                    dotColor = [self.delegate pageControl:self colorForDotAtIndex:i] ?: self.dotColor;
+                    if (!dotColor)
+                    {
+                        //fall back to selected dot color with reduced alpha
+                        dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: kBlackColor;
+                        dotColor = [dotColor colorWithAlphaComponent:0.25f];
+                    }
+                    dotShadowBlur = self.dotShadowBlur;
+                    dotShadowColor = self.dotShadowColor;
+                    dotShadowOffset = self.dotShadowOffset;
+                    dotSize = self.dotSize;
+                }
+            }
             
             CGContextSaveGState(context);
             CGContextTranslateCTM(context, offset + (self.dotSize + self.dotSpacing) * i + self.dotSize / 2, self.frame.size.height / 2);
@@ -167,12 +194,12 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
             {
                 CGContextSetShadowWithColor(context, dotShadowOffset, dotShadowBlur, dotShadowColor.CGColor);
             }
-			if (dotImage)
-			{
-				[dotImage drawInRect:CGRectMake(-dotImage.size.width / 2, -dotImage.size.height / 2, dotImage.size.width, dotImage.size.height)];
-			}
-			else
-			{
+            if (dotImage)
+            {
+                [dotImage drawInRect:CGRectMake(-dotImage.size.width / 2, -dotImage.size.height / 2, dotImage.size.width, dotImage.size.height)];
+            }
+            else
+            {
                 [dotColor setFill];
                 if (!dotShape || dotShape == FXPageControlDotShapeCircle)
                 {
@@ -197,15 +224,15 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
                     CGContextAddPath(context, dotShape);
                     CGContextFillPath(context);
                 }
-			}
+            }
             CGContextRestoreGState(context);
-		}
-	}
+        }
+    }
 }
 
 - (NSInteger)clampedPageValue:(NSInteger)page
 {
-	if (self.wrapEnabled)
+    if (self.wrapEnabled)
     {
         return self.numberOfPages? (page + self.numberOfPages) % self.numberOfPages: 0;
     }
@@ -217,150 +244,150 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 
 - (void)setDotImage:(UIImage *)dotImage
 {
-	if (_dotImage != dotImage)
-	{
-		_dotImage = dotImage;
-		[self setNeedsDisplay];
-	}
+    if (_dotImage != dotImage)
+    {
+        _dotImage = dotImage;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotShape:(CGPathRef)dotShape
 {
-	if (_dotShape != dotShape)
-	{
+    if (_dotShape != dotShape)
+    {
         if (_dotShape > LAST_SHAPE) CGPathRelease(_dotShape);
         _dotShape = dotShape;
         if (_dotShape > LAST_SHAPE) CGPathRetain(_dotShape);
-		[self setNeedsDisplay];
-	}
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotSize:(CGFloat)dotSize
 {
     if (ABS(_dotSize - dotSize) > 0.001)
-	{
-		_dotSize = dotSize;
-		[self setNeedsDisplay];
-	}
+    {
+        _dotSize = dotSize;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotColor:(UIColor *)dotColor
 {
-	if (_dotColor != dotColor)
-	{
-		_dotColor = dotColor;
-		[self setNeedsDisplay];
-	}
+    if (_dotColor != dotColor)
+    {
+        _dotColor = dotColor;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotShadowColor:(UIColor *)dotColor
 {
-	if (_dotShadowColor != dotColor)
-	{
-		_dotShadowColor = dotColor;
-		[self setNeedsDisplay];
-	}
+    if (_dotShadowColor != dotColor)
+    {
+        _dotShadowColor = dotColor;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotShadowBlur:(CGFloat)dotShadowBlur
 {
-	if (ABS(_dotShadowBlur - dotShadowBlur) > 0.001)
-	{
-		_dotShadowBlur = dotShadowBlur;
-		[self setNeedsDisplay];
-	}
+    if (ABS(_dotShadowBlur - dotShadowBlur) > 0.001)
+    {
+        _dotShadowBlur = dotShadowBlur;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotShadowOffset:(CGSize)dotShadowOffset
 {
-	if (!CGSizeEqualToSize(_dotShadowOffset, dotShadowOffset))
-	{
-		_dotShadowOffset = dotShadowOffset;
-		[self setNeedsDisplay];
-	}
+    if (!CGSizeEqualToSize(_dotShadowOffset, dotShadowOffset))
+    {
+        _dotShadowOffset = dotShadowOffset;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotImage:(UIImage *)dotImage
 {
-	if (_selectedDotImage != dotImage)
-	{
-		_selectedDotImage = dotImage;
-		[self setNeedsDisplay];
-	}
+    if (_selectedDotImage != dotImage)
+    {
+        _selectedDotImage = dotImage;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotColor:(UIColor *)dotColor
 {
-	if (_selectedDotColor != dotColor)
-	{
-		_selectedDotColor = dotColor;
-		[self setNeedsDisplay];
-	}
+    if (_selectedDotColor != dotColor)
+    {
+        _selectedDotColor = dotColor;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotShape:(CGPathRef)dotShape
 {
-	if (_selectedDotShape != dotShape)
-	{
+    if (_selectedDotShape != dotShape)
+    {
         if (_selectedDotShape > LAST_SHAPE) CGPathRelease(_selectedDotShape);
         _selectedDotShape = dotShape;
         if (_selectedDotShape > LAST_SHAPE) CGPathRetain(_selectedDotShape);
-		[self setNeedsDisplay];
-	}
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotSize:(CGFloat)dotSize
 {
     if (ABS(_selectedDotSize - dotSize) > 0.001)
-	{
-		_selectedDotSize = dotSize;
-		[self setNeedsDisplay];
-	}
+    {
+        _selectedDotSize = dotSize;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotShadowColor:(UIColor *)dotColor
 {
-	if (_selectedDotShadowColor != dotColor)
-	{
-		_selectedDotShadowColor = dotColor;
-		[self setNeedsDisplay];
-	}
+    if (_selectedDotShadowColor != dotColor)
+    {
+        _selectedDotShadowColor = dotColor;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotShadowBlur:(CGFloat)dotShadowBlur
 {
     if (ABS(_selectedDotShadowBlur - dotShadowBlur) > 0.001)
-	{
-		_selectedDotShadowBlur = dotShadowBlur;
-		[self setNeedsDisplay];
-	}
+    {
+        _selectedDotShadowBlur = dotShadowBlur;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setSelectedDotShadowOffset:(CGSize)dotShadowOffset
 {
-	if (!CGSizeEqualToSize(_selectedDotShadowOffset, dotShadowOffset))
-	{
-		_selectedDotShadowOffset = dotShadowOffset;
-		[self setNeedsDisplay];
-	}
+    if (!CGSizeEqualToSize(_selectedDotShadowOffset, dotShadowOffset))
+    {
+        _selectedDotShadowOffset = dotShadowOffset;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDotSpacing:(CGFloat)dotSpacing
 {
     if (ABS(_dotSpacing - dotSpacing) > 0.001)
-	{
-		_dotSpacing = dotSpacing;
-		[self setNeedsDisplay];
-	}
+    {
+        _dotSpacing = dotSpacing;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setDelegate:(id<FXPageControlDelegate>)delegate
 {
-	if (_delegate != delegate)
-	{
-		_delegate = delegate;
-		[self setNeedsDisplay];
-	}
+    if (_delegate != delegate)
+    {
+        _delegate = delegate;
+        [self setNeedsDisplay];
+    }
 }
 
 - (void)setCurrentPage:(NSInteger)page
@@ -371,7 +398,7 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 
 - (void)setNumberOfPages:(NSInteger)pages
 {
-	if (_numberOfPages != pages)
+    if (_numberOfPages != pages)
     {
         _numberOfPages = pages;
         if (self.currentPage >= pages)
@@ -384,14 +411,14 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 
 - (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
 {
-	CGPoint point = [touch locationInView:self];
-	_currentPage = [self clampedPageValue:self.currentPage + ((point.x > self.frame.size.width / 2)? 1: -1)];
+    CGPoint point = [touch locationInView:self];
+    _currentPage = [self clampedPageValue:self.currentPage + ((point.x > self.frame.size.width / 2)? 1: -1)];
     if (!self.defersCurrentPageDisplay)
     {
         [self setNeedsDisplay];
     }
-	[self sendActionsForControlEvents:UIControlEventValueChanged];
-	return [super beginTrackingWithTouch:touch withEvent:event];
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+    return [super beginTrackingWithTouch:touch withEvent:event];
 }
 
 - (CGSize)sizeThatFits:(__unused CGSize)size

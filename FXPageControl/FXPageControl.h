@@ -44,6 +44,12 @@
 #define weak_delegate unsafe_unretained
 #endif
 
+typedef enum
+{
+    DS_DOT,
+    DS_LINE
+} DotStyle;
+
 
 extern const CGPathRef FXPageControlDotShapeCircle;
 extern const CGPathRef FXPageControlDotShapeSquare;
@@ -54,13 +60,13 @@ extern const CGPathRef FXPageControlDotShapeTriangle;
 
 
 @interface FXPageControl : UIControl
-
+- (id)initWithFrame:(CGRect)frame style:(DotStyle)style;
 - (void)setUp;
 - (CGSize)sizeForNumberOfPages:(NSInteger)pageCount;
 - (void)updateCurrentPageDisplay;
 
 @property (nonatomic, weak_delegate) IBOutlet id <FXPageControlDelegate> delegate;
-
+@property (nonatomic, assign) DotStyle style;
 @property (nonatomic, assign) NSInteger currentPage;
 @property (nonatomic, assign) NSInteger numberOfPages;
 @property (nonatomic, assign) BOOL defersCurrentPageDisplay;
@@ -84,6 +90,8 @@ extern const CGPathRef FXPageControlDotShapeTriangle;
 @property (nonatomic, assign) CGSize selectedDotShadowOffset;
 
 @property (nonatomic, assign) CGFloat dotSpacing;
+
+@property (nonatomic, strong) UIView *selectedView;
 
 @end
 
