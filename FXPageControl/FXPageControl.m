@@ -31,11 +31,8 @@
 //
 
 #import "FXPageControl.h"
-#import "UIManager.h"
-
 
 #pragma GCC diagnostic ignored "-Wgnu"
-#pragma GCC diagnostic ignored "-Wreceiver-is-weak"
 #pragma GCC diagnostic ignored "-Warc-repeated-use-of-weak"
 #pragma GCC diagnostic ignored "-Wdirect-ivar-access"
 
@@ -73,8 +70,8 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
     self.contentMode = UIViewContentModeRedraw;
     self.style = DS_DOT;
     //set defaults
-    _dotSpacing = 10.0f;
-    _dotSize = 6.0f;
+    _dotSpacing = 10;
+    _dotSize = 6;
     _dotShadowOffset = CGSizeMake(0, 1);
     _selectedDotShadowOffset = CGSizeMake(0, 1);
 }
@@ -161,11 +158,11 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
                 if (self.style == DS_DOT) {
                     dotImage = [self.delegate pageControl:self selectedImageForDotAtIndex:i] ?: self.selectedDotImage;
                     dotShape = [self.delegate pageControl:self selectedShapeForDotAtIndex:i] ?: self.selectedDotShape ?: self.dotShape;
-                    dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: kBlackColor;
+                    dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: [UIColor blackColor];
                     dotShadowBlur = self.selectedDotShadowBlur;
                     dotShadowColor = self.selectedDotShadowColor;
                     dotShadowOffset = self.selectedDotShadowOffset;
-                    dotSize = self.selectedDotSize ?: self.dotSize;
+                    dotSize = self.selectedDotSize > 0 ?: self.dotSize;
                 }
             }
             else
@@ -178,8 +175,8 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
                     if (!dotColor)
                     {
                         //fall back to selected dot color with reduced alpha
-                        dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: kBlackColor;
-                        dotColor = [dotColor colorWithAlphaComponent:0.25f];
+                        dotColor = [self.delegate pageControl:self selectedColorForDotAtIndex:i] ?: self.selectedDotColor ?: [UIColor blackColor];
+                        dotColor = [dotColor colorWithAlphaComponent:0.25];
                     }
                     dotShadowBlur = self.dotShadowBlur;
                     dotShadowColor = self.dotShadowColor;
@@ -424,7 +421,7 @@ const CGPathRef FXPageControlDotShapeTriangle = (const CGPathRef)3;
 - (CGSize)sizeThatFits:(__unused CGSize)size
 {
     CGSize dotSize = [self sizeForNumberOfPages:self.numberOfPages];
-    if (self.selectedDotSize)
+    if (self.selectedDotSize > 0)
     {
         dotSize.width += (self.selectedDotSize - self.dotSize);
         dotSize.height = MAX(self.dotSize, self.selectedDotSize);
